@@ -40,6 +40,14 @@ class Game():
         raise NotImplementedError
 
 
+    def encode_list(self):
+        """
+        Encode the current board state to a list-vector for use in nerual networks.
+        """
+
+        raise NotImplementedError
+
+
 class TicTacToe(Game):
     def __init__(self, board: list, turn: Player):
         assert len(board) == 9
@@ -92,11 +100,22 @@ class TicTacToe(Game):
 
         return s
 
-def test_tic_str():
+
+    def encode_list(self):
+        return [*self.board, self.turn]
+
+
+# TODO: Write generic test for any implementor of Game, ie.
+# gen legal moves, encoding, etc...
+def test_tic():
     tic = TicTacToe.startpos()
     tic.make_move(1)
     tic.make_move(2)
     tic.make_move(4)
-    print(tic)
+
+    assert tic.encode_list() == [0, 1, -1, 0, 1, 0, 0, 0, 0, -1]
 
 
+if __name__ == '__main__':
+    # run tests
+    test_tic()
