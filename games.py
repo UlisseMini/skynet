@@ -25,7 +25,7 @@ class Game():
 
     def result(self) -> int:
         """
-        Return the result of the game, if the game is over None otherwise.
+        Return the winner of the game, 0 for TIE, None for in progress
         """
         raise NotImplementedError
 
@@ -98,7 +98,7 @@ class TicTacToe(Game):
         return None
 
     def copy(self):
-        return TicTacToe(self.board, self.turn)
+        return TicTacToe(self.board.copy(), self.turn)
 
     def __str__(self):
         def tile(x):
@@ -106,6 +106,7 @@ class TicTacToe(Game):
 
         t = [tile(x) for x in self.board]
         s = '\n'.join([' '.join(t[i:j]) for i,j in [(0,3), (3,6), (6,9)]])
+        s += f'\nturn: {tile(self.turn)}'
 
         return s
 
