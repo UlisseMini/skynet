@@ -4,6 +4,9 @@ class Player:
 
 # Two player, zero sum perfect information game.
 class Game():
+    # The size of the vector returned from encode_list
+    STATE_SIZE = None
+
     @classmethod
     def startpos(cls):
         raise NotImplementedError
@@ -40,7 +43,7 @@ class Game():
         raise NotImplementedError
 
 
-    def encode_list(self):
+    def encode_list(self) -> [float]:
         """
         Encode the current board state to a list-vector for use in nerual networks.
         """
@@ -49,6 +52,9 @@ class Game():
 
 
 class TicTacToe(Game):
+    # board + turn
+    STATE_SIZE = 10
+
     def __init__(self, board: list, turn: Player):
         assert len(board) == 9
 
@@ -86,6 +92,9 @@ class TicTacToe(Game):
             if all(board[i] == turn for i in (2, 4, 6)):
                 return turn
 
+        if all(board[i] != 0 for i in range(9)):
+            return 0 # draw
+
         return None
 
     def copy(self):
@@ -102,11 +111,40 @@ class TicTacToe(Game):
 
 
     def encode_list(self):
-        return [*self.board, self.turn]
+        return [*[float(x) for x in self.board], float(self.turn)]
 
 
-# TODO: Write generic test for any implementor of Game, ie.
-# gen legal moves, encoding, etc...
+# generic game test method, useful for verifying the correctness
+# of implemented games.
+def test_game(game, n=100):
+    import random
+    random.seed(42)
+
+    assert type(game.STATE_SIZE) == int
+
+    # play random games, assert invariants
+    for _ in range(n):
+        g = game.startpos()
+        while g.result() is None:
+            enc = g.encode_list()
+            assert len(enc) == game.STATE_SIZE, f'enclen {len(enc)} != want {game.STATE_SIZE}'
+            assert all(type(e) == float for e in enc), f'enc {enc} contains non float'
+
+            legal = list(g.legal())
+            assert len(legal) > 0, 'game not over, we must have moves!'
+
+            mv = random.choice(legal)
+
+            copy = g.copy()
+            g.make_move(mv)
+            assert copy.encode_list() != g.encode_list(), 'copy equals board after move'
+
+
+
+        # For movegen efficiency we want to avoid checking gameover.
+        # assert len(list(g.legal())) == 0, 'game is over, but there are legal moves!'
+
+
 def test_tic():
     tic = TicTacToe.startpos()
     tic.make_move(1)
@@ -117,5 +155,7 @@ def test_tic():
 
 
 if __name__ == '__main__':
-    # run tests
+    print('running tests...')
     test_tic()
+    test_game(TicTacToe)
+    print('ok')
