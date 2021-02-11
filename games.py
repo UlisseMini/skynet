@@ -7,11 +7,14 @@ class Game():
     # The size of the vector returned from encode_list
     STATE_SIZE = None
 
+    # How many moves there are, counting from zero
+    MOVES_SIZE = None
+
     @classmethod
     def startpos(cls):
         raise NotImplementedError
 
-    def make_move(self, mv):
+    def make_move(self, mv: int):
         """
         Make a move on the board, use copy if you want a backup
         """
@@ -54,6 +57,7 @@ class Game():
 class TicTacToe(Game):
     # board + turn
     STATE_SIZE = 10
+    MOVES_SIZE = 8
 
     def __init__(self, board: list, turn: Player):
         assert len(board) == 9
@@ -65,7 +69,9 @@ class TicTacToe(Game):
     def startpos(cls):
         return cls([0] * 9, turn=Player.MAX)
 
-    def make_move(self, mv):
+    def make_move(self, mv: int):
+        assert 0 <= mv <= self.MOVES_SIZE, f'move {mv} out of bounds'
+
         self.board[mv] = self.turn
         self.turn = self.turn * -1
 
@@ -113,6 +119,7 @@ class TicTacToe(Game):
 
     def encode_list(self):
         return [*[float(x) for x in self.board], float(self.turn)]
+
 
 
 # generic game test method, useful for verifying the correctness
